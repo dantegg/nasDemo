@@ -4,7 +4,6 @@ var MemoryDayItem = function(text) {
     if (text) {
         var obj = JSON.parse(text)
         this.memoryDate = obj.memoryDate
-        this.author = obj.author
         this.content = obj.content
         this.title = obj.title
     }
@@ -47,16 +46,15 @@ MemoryDayContract.prototype = {
         var from = Blockchain.transaction.from
         var memoryDayItem = this.data.get(title)
         memoryDayItem = new MemoryDayItem()
-        memoryDayItem.author = from
         memoryDayItem.title = title
         memoryDayItem.content = content
         memoryDayItem.memoryDate = memoryDate
-        this.data.put(author, memoryDayItem)
+        this.data.put(from, memoryDayItem)
     },
 
-    get: function(author) {
+    get: function() {
         var fromUser = Blockchain.transaction.from
-        return this.data.get(author || fromUser)
+        return this.data.get(fromUser)
     }
 }
 

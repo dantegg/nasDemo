@@ -50,6 +50,12 @@ MemoryDayContract.prototype = {
     get: function() {
         var fromUser = Blockchain.transaction.from
         return this.data.get(fromUser)
+    },
+    append: function(title, content, memoryDate) {
+
+    },
+    query: function() {
+        
     }
 }
 

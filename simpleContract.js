@@ -2,26 +2,21 @@
 
 var MemoryDayItem = function(text) {
     if (text) {
-        var obj = JSON.parse(text)
-        this.memoryDate = obj.memoryDate
-        this.content = obj.content
-        this.title = obj.title
+        var obj = JSON.parse(text);
+        this.memoryDate = obj.memoryDate;
+        this.content = obj.content;
+        this.title = obj.title;
     }
-}
+};
 
 MemoryDayItem.prototype = {
     toStirng: function() {
-        return JSON.stringify(this)
+        return JSON.stringify(this);
     }
-}
+};
 
 
-var MemoryDayContract = function() {}
-
-MemoryDayContract.prototype = {
-    init: function() {
-
-    },
+var MemoryDayContract = function() {
     LocalContractStorage.defineMapProperty(this, "data", {
         parse: function(text) {
             return new MemoryDayItem(text)
@@ -30,12 +25,12 @@ MemoryDayContract.prototype = {
             return o.toStirng()
         }
     })
-    // toString: function() {
-    //     return JSON.stringify(this)
-    // }
-};
+}
 
 MemoryDayContract.prototype = {
+    init: function() {
+
+    },
     save: function(title, content, memoryDate) {
         if (!title || !content || !memoryDate) {
             throw new Error("title , content or memoryDate is empty!")

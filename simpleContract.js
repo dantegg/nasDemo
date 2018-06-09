@@ -25,7 +25,7 @@ var MemoryDayContract = function() {
     //         return o.toStirng()
     //     }
     // })
-    LocalContractStorage.defineMapProperty(this, "data")
+    LocalContractStorage.defineMapProperty(this, "data", null)
 }
 
 MemoryDayContract.prototype = {
@@ -52,14 +52,22 @@ MemoryDayContract.prototype = {
         return this.data.get(fromUser)
     },
     append: function(title, content, memoryDate) {
-        var index = this.size
-        var memoryDayItem = new MemoryDayItem()
-        memoryDayItem.title = title
-        memoryDayItem.content = content
-        memoryDayItem.memoryDate = memoryDate
-        var from = Blockchain.transaction.from
-        var _existData = this.get() || []
-        this.data.set(from, _existData.push(memoryDayItem))
+        var fromUser = Blockchain.transaction.from
+        var _dd = this.data.get(fromUser)
+        if (_dd === null) {
+            _dd = [{
+                title,
+                content,
+                memoryDate
+            }]
+        } else {
+            _dd.push({
+                title,
+                content,
+                memoryDate
+            })
+        }
+        this.data.set(fromUser, _dd)
     },
     // query: function(limit="-1", offset="0") {
     //     limit = parseInt(limit)

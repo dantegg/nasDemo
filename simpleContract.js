@@ -1,19 +1,19 @@
 "use strict"
 
-var MemoryDayItem = function(text) {
-    if (text) {
-        var obj = JSON.parse(text);
-        this.memoryDate = obj.memoryDate;
-        this.content = obj.content;
-        this.title = obj.title;
-    }
-};
+// var MemoryDayItem = function(text) {
+//     if (text) {
+//         var obj = JSON.parse(text);
+//         this.memoryDate = obj.memoryDate;
+//         this.content = obj.content;
+//         this.title = obj.title;
+//     }
+// };
 
-MemoryDayItem.prototype = {
-    toStirng: function() {
-        return JSON.stringify(this);
-    }
-};
+// MemoryDayItem.prototype = {
+//     toStirng: function() {
+//         return JSON.stringify(this);
+//     }
+// };
 
 
 var MemoryDayContract = function() {
@@ -31,68 +31,48 @@ var MemoryDayContract = function() {
 MemoryDayContract.prototype = {
     init: function() {
     },
-    // save: function(title, content, memoryDate) {
-    //     if (!title || !content || !memoryDate) {
-    //         throw new Error("title , content or memoryDate is empty!")
-    //     }
-    //     if (title.length > 20 || content.length > 500) {
-    //         throw new Error("title or content exceed limit length")
-    //     }
-    //     var from = Blockchain.transaction.from
-    //     var memoryDayItem = this.data.get(title)
-    //     memoryDayItem = new MemoryDayItem()
-    //     memoryDayItem.title = title
-    //     memoryDayItem.content = content
-    //     memoryDayItem.memoryDate = memoryDate
-    //     this.data.put(from, memoryDayItem)
-    // },
-
     get: function() {
         var fromUser = Blockchain.transaction.from
         return this.data.get(fromUser)
     },
     append: function(title, content, memoryDate) {
         var fromUser = Blockchain.transaction.from
-        var _dd = this.data.get(fromUser)
-        if (_dd === null) {
-            _dd = [{
+        var _data = this.data.get(fromUser)
+        var deleteStatus = false
+        if (_data === null) {
+            _data = [{
                 title,
                 content,
-                memoryDate
+                memoryDate,
+                index: 0,
+                deleteStatus
             }]
         } else {
-            _dd.push({
+            var index = _data.length - 1
+            _data.push({
                 title,
                 content,
-                memoryDate
+                memoryDate,
+                index,
+                deleteStatus
             })
         }
-        this.data.set(fromUser, _dd)
+        this.data.set(fromUser, _data)
     },
-    // query: function(limit="-1", offset="0") {
-    //     limit = parseInt(limit)
-    //     offset = parseInt(offset)
-    //     if (limit <= 0) {
-    //         limit = 100
-    //     }
-    //     if (offset < 0) {
-    //         offset = 0
-    //     } else if (offset > this.size) {
-    //         offset = this.size -1
-    //         limit = 1
-    //     }
-    //     var number = offset+limit
-    //     if (number > this.size) {
-    //         number = this.size
-    //     }
-    //     var result = ''
-    //     for (var i = offset;i<number;i++) {
-    //         var data = this.arrayMap.get(i)
-    //         result += data+','
-    //     }
-    //     result = result.substring(0, result.length - 1)
-    //     return result
-    // }
+    query: function(currentPage, pageSize) {
+        var fromUser = Blockchain.transaction.from
+        var _begin = (Number(currentPage) - 1) * Number(pageSize)
+        var _end = Number(currentPage) * Number(pageSize)
+        var _existData = this.data.get(fromUser).slice(_begin, _end).filter(x => {
+            return x.deleteStatus === false
+        })
+        return _existData
+    },
+    del: function(index) {
+        var fromUser = Blockchain.transaction.from
+        var _data = this.data.get(fromUser)
+        _data[index].deleteStatus = true
+    }
 }
 
 module.exports = MemoryDayContract

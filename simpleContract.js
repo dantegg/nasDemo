@@ -72,6 +72,7 @@ MemoryDayContract.prototype = {
         var fromUser = Blockchain.transaction.from
         var _data = this.data.get(fromUser)
         _data[index].deleteStatus = true
+        this.data.set(fromUser, _data)
     }
 }
 

@@ -73,6 +73,10 @@ MemoryDayContract.prototype = {
         var _data = this.data.get(fromUser)
         _data[index].deleteStatus = true
         this.data.set(fromUser, _data)
+    },
+    getAllCount: function() {
+        var fromUser = Blockchain.transaction.from
+        return this.data.get(fromUser).length
     }
 }
 

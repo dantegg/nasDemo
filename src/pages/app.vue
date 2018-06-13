@@ -3,7 +3,7 @@
         <el-row :gutter="20">
             <el-col :span="12" :offset="6">
                 <div class="memory-head">
-                    <h1>纪念日</h1>
+                    <h1>星云纪念日</h1>
                     <div>
                         <el-button type="primary" icon="el-icon-edit" circle @click="modalToggle"></el-button>
                     </div>
@@ -13,13 +13,13 @@
                         <el-row :gutter="20">
                             <el-col :xs="24" :sm="24" :md="8" :lg="8" :xl="8">
                                 <div class="time">
-                                    已经 <span>{{ item }}</span> 天
+                                    已经 <span>{{ item.memoryDate }}</span> 天
                                 </div>
                             </el-col>
                             <el-col :xs="24" :sm="24" :md="8" :lg="8" :xl="8">
                                 <div class="detail">
-                                    <div class="title">xxx</div>
-                                    <div class="content">content</div>
+                                    <div class="title">{{ item.title }}</div>
+                                    <div class="content">{{ item.content }}</div>
                                 </div>
                             </el-col>
                             <el-col :xs="24" :sm="24" :md="8" :lg="8" :xl="8">
@@ -49,17 +49,34 @@
     </div>
 </template>
 <script>
+// import NebPay from 'nebpay.js'
+import nebulas from 'nebulas'
+
 export default {
   data() {
     return {
       modalVisible: false,
+      dappAddress: 'n1pP4zdjUnxqoyjJ2br3gdNEDdqu4nnLjor',
+      serialNumber: null,
       notEnd: true,
       data: [1, 2, 3, 4, 5],
-      pageNum: 0
+      pageNum: 0,
+      address: null
     };
   },
   mounted() {
-      this.query()
+      window.postMessage({
+      'target': 'contentscript',
+      'data': {},
+      'method': 'getAccount'
+    }, '*')
+
+    window.addEventListener('message', e => {
+      if (e.data && e.data.data && e.data.data.account) {
+        this.address = e.data.data.account
+        this.query()
+      }
+    })
   },
   methods: {
     modalToggle() {
@@ -91,6 +108,35 @@ export default {
     },
     query() {
         console.log('query')
+        // const nebpay = new NebPay()
+        // this.serialNumber = nebpay.call(this.dappAddress, "0", "get", "", {
+        //     listener: function(resp) {
+        //         console.log("the callback is " + resp)
+        //     }
+        // })
+        var neb = new nebulas.Neb()
+        var Account = nebulas.Account
+        neb.setRequest(new nebulas.HttpRequest("https://testnet.nebulas.io"))
+        const from = this.address
+        const to = this.dappAddress
+        const value = "0"
+        const nonce = "0"
+        const gas_price = "1000000"
+        const gas_limit = "2000000"
+        const callFunciton = "get"
+        const callArgs = ""
+        const contract = {
+            "function": callFunciton,
+            "args": callArgs
+        }
+        console.log(from, to)
+        const vm = this
+        neb.api.call(from, to, value, nonce, gas_price, gas_limit, contract).then(function(resp) {
+            console.log('resp', resp)
+            vm.data = JSON.parse(resp.result)
+        }).catch(function (err) {
+            console.log("err" + err.message)
+        })
         this.notEnd = false
     }
   }

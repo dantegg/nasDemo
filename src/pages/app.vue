@@ -1,7 +1,7 @@
 <template>
     <div>
         <el-row :gutter="20" class="head-area">
-            <el-col :span="12" :offset="6">
+            <el-col :xs="{span: 22, offset: 1}" :sm="{span: 22, offset: 1}" :md="{span: 12, offset: 6}" :lg="{span: 12, offset: 6}" :xl="{span: 12, offset: 6}">
                 <div class="memory-head">
                     <div class="calender-area">
                         <div class="week-day">{{ week[currentDate.getDay()]}}</div>

@@ -13,10 +13,11 @@
                     </div>
                 </div>
                 <div class="memory-body">
-                    <div v-for="item in data" :key="item" class="memoryCard">
+                    <div v-for="item in data" :key="item.index" class="memoryCard">
                         <el-row :gutter="20">
                             <el-col :xs="24" :sm="24" :md="8" :lg="8" :xl="8">
                                 <div class="time">
+                                    <div>距离 {{item.memoryDate}}</div>
                                     已经 <span>{{ item.memoryDate }}</span> 天
                                 </div>
                             </el-col>
@@ -74,7 +75,7 @@ export default {
       // dappAddress: 'n1pP4zdjUnxqoyjJ2br3gdNEDdqu4nnLjor',  // testnet
       serialNumber: null,
       notEnd: true,
-      data: [1, 2, 3, 4, 5],
+      data: [],
       pageNum: 0,
       address: null,
       noResult: false,
@@ -184,6 +185,9 @@ export default {
             console.log("err" + err.message)
         })
         this.notEnd = false
+    },
+    caculateDate(date) {
+        console.log(date)
     }
   }
 };

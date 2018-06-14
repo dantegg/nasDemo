@@ -48,7 +48,7 @@ MemoryDayContract.prototype = {
                 deleteStatus
             }]
         } else {
-            var index = _data.length - 1
+            var index = _data.length
             _data.push({
                 title,
                 content,

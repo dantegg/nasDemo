@@ -3,11 +3,15 @@
         <el-row :gutter="20" class="head-area">
             <el-col :span="12" :offset="6">
                 <div class="memory-head">
+                    <div class="calender-area">
+                        <div class="week-day">{{ week[currentDate.getDay()]}}</div>
+                        <div class="date-day">{{ currentDate.getDate() }}</div>
+                    </div>
                     <h1>星云纪念日</h1>
                 </div>
             </el-col>
         </el-row>
-        <el-row :gutter="20">
+        <el-row :gutter="20" v-loading="loading">
             <el-col :span="12" :offset="6">
                 <div class="edit-area">
                     <el-button type="primary" icon="el-icon-edit" circle @click="modalToggle"></el-button>
@@ -19,7 +23,7 @@
                             <el-col :xs="24" :sm="24" :md="8" :lg="8" :xl="8">
                                 <div class="time">
                                     <div>距离 {{item.memoryDate}}</div>
-                                    已经 <span>{{ item.memoryDate }}</span> 天
+                                    {{ (caculateDate(item.memoryDate) > 0) ? '还有' : '已经' }} <span>{{ Math.abs(caculateDate(item.memoryDate)) }}</span> 天
                                 </div>
                             </el-col>
                             <el-col :xs="24" :sm="24" :md="8" :lg="8" :xl="8">
@@ -70,6 +74,7 @@ import nebulas from 'nebulas'
 
 export default {
   data() {
+    let currentDate = new Date()
     return {
       modalVisible: false,
       dappAddress: 'n1mdDL3sP2cA5Ud1kwcjQ7f9Q2PY3pHeqEN',   // mainnet
@@ -85,7 +90,10 @@ export default {
         editContent: null,
         editTime: null
       },
-      allCount: 0
+      allCount: 0,
+      loading: false,
+      currentDate,
+      week: ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六']
     };
   },
   mounted() {
@@ -184,6 +192,7 @@ export default {
             "args": callArgs
         }
         const vm = this
+        vm.loading = true
         neb.api.call(from, to, value, nonce, gas_price, gas_limit, contract).then(function(resp) {
             if (resp.result === 'null') {
                 vm.noResult = true
@@ -196,6 +205,7 @@ export default {
                 neb.api.call(from, to, value, nonce, gas_price, gas_limit, _contract).then(function(resp) {
                     console.log('resp', resp)
                     vm.data = JSON.parse(resp.result)
+                    vm.loading = false
                 })
             }
         }).catch(function (err) {
@@ -219,20 +229,29 @@ export default {
             "args": callArgs
         }
         const vm = this
+        vm.loading = true
         neb.api.call(from, to, value, nonce, gas_price, gas_limit, contract).then(function(resp) {
             console.log('count', resp)
             vm.allCount = Number(resp.result)
             vm.noResult = Number(resp.result) === 0
             console.log(vm.data.length)
-            vm.notEnd = Number(resp.result) !== vm.data.length
+            vm.loading = false
         }).catch(function (err) {
             console.log("err" + err.message)
         })
     },
 
     caculateDate(date) {
-        console.log(date)
+        const _current = new Date()
+        const _record = new Date(date)
+        const _difference = _record.getTime() - _current.getTime()
+        return Math.floor(_difference/(24 * 3600 * 1000))
     }
+  },
+  computed: {
+      notEnd(){
+          return this.allCount !== this.data.length
+      }
   }
 };
 </script>

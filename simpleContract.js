@@ -63,9 +63,9 @@ MemoryDayContract.prototype = {
         var fromUser = Blockchain.transaction.from
         var _begin = (Number(currentPage) - 1) * Number(pageSize)
         var _end = Number(currentPage) * Number(pageSize)
-        var _existData = this.data.get(fromUser).slice(_begin, _end).filter(x => {
+        var _existData = this.data.get(fromUser).filter(x => {
             return x.deleteStatus === false
-        })
+        }).slice(_begin, _end)
         return _existData
     },
     del: function(index) {
@@ -76,7 +76,7 @@ MemoryDayContract.prototype = {
     },
     getAllCount: function() {
         var fromUser = Blockchain.transaction.from
-        return  this.data.get(fromUser) === null ? 0 : this.data.get(fromUser).slice(_begin, _end).filter(x => {
+        return  this.data.get(fromUser) === null ? 0 : this.data.get(fromUser).filter(x => {
             return x.deleteStatus === false
         }).length
     }

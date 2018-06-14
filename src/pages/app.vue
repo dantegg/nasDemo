@@ -84,10 +84,9 @@ export default {
     let currentDate = new Date()
     return {
       modalVisible: false,
-      dappAddress: 'n1mdDL3sP2cA5Ud1kwcjQ7f9Q2PY3pHeqEN',   // mainnet
+      dappAddress: 'n1ednaSLyDAD4KVfuPkYi3bdPQaqWYW2VBx',   // mainnet
       // dappAddress: 'n1pP4zdjUnxqoyjJ2br3gdNEDdqu4nnLjor',  // testnet
       serialNumber: null,
-      notEnd: false,
       data: [],
       pageNum: 0,
       address: null,
@@ -142,19 +141,23 @@ export default {
         // const _date = this.form.editTime.getDate()
         // const _time = _year + '-' + _month + '-' + _date
         console.log(this.form.editTime)
+        const vm = this
         const callArgs = JSON.stringify([this.form.editTitle, this.form.editContent, this.form.editTime])
         console.log('ss', callArgs)
 
         const nebpay = new NebPay()
-        this.serialNumber = nebpay.call(this.dappAddress, "0", "append", callArgs, {
+        vm.serialNumber = nebpay.call(this.dappAddress, "0", "append", callArgs, {
+            qrcode: {
+                showQRCode: false
+            },
             listener: function(resp) {
                 console.log("the callback is " + resp)
             }
         })
         this.modalToggle()
-        const vm = this
+        this.loading = true
         this.intervalQuery = setInterval(function() {
-            vm.funcIntervalQuery();
+            vm.funcIntervalQuery(vm.serialNumber);
         }, 10000)
     },
     cancel() {
@@ -162,6 +165,7 @@ export default {
     },
     deleteItem(item) {
         console.log(item)
+        const vm = this
         this.$confirm('此操作将删除这条记录, 是否继续?', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
@@ -169,15 +173,23 @@ export default {
         }).then(() => {
             const callArgs = JSON.stringify([item.index])
             const nebpay = new NebPay()
-            this.serialNumber = nebpay.call(this.dappAddress, "0", "del", callArgs, {
+            vm.serialNumber = nebpay.call(this.dappAddress, "0", "del", callArgs, {
+                qrcode: {
+                    showQRCode: false
+                },
                 listener: function(resp) {
-                    console.log("the callback is " + resp)
+                    console.log("the delete is " + resp)
                 }
             })
-          this.$message({
-            type: 'success',
-            message: '删除成功!'
-          });
+            console.log(vm.serialNumber, 'serial111')
+            vm.intervalQuery = setInterval(function() {
+                console.log(vm.serialNumber, 'serial222')
+                vm.funcIntervalQuery(vm.serialNumber);
+            }, 10000)
+            this.$message({
+                type: 'success',
+                message: '删除成功!'
+            });
         }).catch(() => {
           this.$message({
             type: 'info',
@@ -260,12 +272,14 @@ export default {
     },
     funcIntervalQuery(serialNumber) {
         const nebpay = new NebPay()
+        const vm = this
         nebpay.queryPayInfo(serialNumber)
             .then(function(resp) {
                 console.log('tx result: ' + resp)
                 var respObject = JSON.parse(resp)
                 if (respObject.code === 0) {
-                    clearInterval(this.intervalQuery)
+                    clearInterval(vm.intervalQuery)
+                    vm.loading = false
                 }
             })
             .catch(function(err) {

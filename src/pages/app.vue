@@ -1,16 +1,17 @@
 <template>
     <div>
-        <el-row :gutter="20">
+        <el-row :gutter="20" class="head-area">
             <el-col :span="12" :offset="6">
                 <div class="memory-head">
                     <h1>星云纪念日</h1>
-                    <div class="no-result" v-if="noResult">
-                        <div>还没有记录，去创建一条吧！</div>
-                        <div><i class="el-icon-arrow-down"></i></div>
-                    </div>
-                    <div>
-                        <el-button type="primary" icon="el-icon-edit" circle @click="modalToggle"></el-button>
-                    </div>
+                </div>
+            </el-col>
+        </el-row>
+        <el-row :gutter="20">
+            <el-col :span="12" :offset="6">
+                <div class="edit-area">
+                    <el-button type="primary" icon="el-icon-edit" circle @click="modalToggle"></el-button>
+                    <span v-if="noResult">还没有记录，创建一条吧!</span>
                 </div>
                 <div class="memory-body">
                     <div v-for="item in data" :key="item.index" class="memoryCard">
@@ -71,10 +72,10 @@ export default {
   data() {
     return {
       modalVisible: false,
-      dappAddress: 'n1h8nWQasUmtkuYDufwYT5VKmjZuWxyQHWc',   // mainnet
+      dappAddress: 'n1mdDL3sP2cA5Ud1kwcjQ7f9Q2PY3pHeqEN',   // mainnet
       // dappAddress: 'n1pP4zdjUnxqoyjJ2br3gdNEDdqu4nnLjor',  // testnet
       serialNumber: null,
-      notEnd: true,
+      notEnd: false,
       data: [],
       pageNum: 0,
       address: null,
@@ -84,7 +85,7 @@ export default {
         editContent: null,
         editTime: null
       },
-      
+      allCount: 0
     };
   },
   mounted() {
@@ -98,6 +99,7 @@ export default {
       if (e.data && e.data.data && e.data.data.account) {
         this.address = e.data.data.account
         this.query()
+        this.queryCount()
       }
     })
   },
@@ -146,6 +148,13 @@ export default {
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
+            const callArgs = JSON.stringify([item.index])
+            const nebpay = new NebPay()
+            this.serialNumber = nebpay.call(this.dappAddress, "0", "del", callArgs, {
+                listener: function(resp) {
+                    console.log("the callback is " + resp)
+                }
+            })
           this.$message({
             type: 'success',
             message: '删除成功!'
@@ -157,7 +166,7 @@ export default {
           })
         })
     },
-    query() {
+    query(page = 1) {
         console.log('query')
         var neb = new nebulas.Neb()
         var Account = nebulas.Account
@@ -176,16 +185,51 @@ export default {
         }
         const vm = this
         neb.api.call(from, to, value, nonce, gas_price, gas_limit, contract).then(function(resp) {
-            console.log('resp', resp)
-            vm.data = JSON.parse(resp.result)
             if (resp.result === 'null') {
                 vm.noResult = true
+            } else {
+                let _callArgs = JSON.stringify([page, 5])
+                let _contract = {
+                    "function": "query",
+                    "args": _callArgs
+                }
+                neb.api.call(from, to, value, nonce, gas_price, gas_limit, _contract).then(function(resp) {
+                    console.log('resp', resp)
+                    vm.data = JSON.parse(resp.result)
+                })
             }
         }).catch(function (err) {
             console.log("err" + err.message)
         })
-        this.notEnd = false
     },
+    queryCount() {
+        var neb = new nebulas.Neb()
+        var Account = nebulas.Account
+        neb.setRequest(new nebulas.HttpRequest("https://mainnet.nebulas.io"))
+        const from = this.address
+        const to = this.dappAddress
+        const value = "0"
+        const nonce = "0"
+        const gas_price = "1000000"
+        const gas_limit = "2000000"
+        const callFunciton = "getAllCount"
+        const callArgs = ""
+        const contract = {
+            "function": callFunciton,
+            "args": callArgs
+        }
+        const vm = this
+        neb.api.call(from, to, value, nonce, gas_price, gas_limit, contract).then(function(resp) {
+            console.log('count', resp)
+            vm.allCount = Number(resp.result)
+            vm.noResult = Number(resp.result) === 0
+            console.log(vm.data.length)
+            vm.notEnd = Number(resp.result) !== vm.data.length
+        }).catch(function (err) {
+            console.log("err" + err.message)
+        })
+    },
+
     caculateDate(date) {
         console.log(date)
     }

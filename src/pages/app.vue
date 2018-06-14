@@ -77,6 +77,7 @@
 <script>
 import NebPay from 'nebpay.js'
 import nebulas from 'nebulas'
+import { clearInterval } from 'timers';
 
 export default {
   data() {
@@ -99,7 +100,8 @@ export default {
       allCount: 0,
       loading: false,
       currentDate,
-      week: ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六']
+      week: ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'],
+      intervalQuery: null
     };
   },
   mounted() {
@@ -149,8 +151,11 @@ export default {
                 console.log("the callback is " + resp)
             }
         })
-      // this.modalToggle()
-
+        this.modalToggle()
+        const vm = this
+        this.intervalQuery = setInterval(function() {
+            vm.funcIntervalQuery();
+        }, 10000)
     },
     cancel() {
       this.modalToggle()
@@ -252,6 +257,20 @@ export default {
         const _record = new Date(date)
         const _difference = _record.getTime() - _current.getTime()
         return Math.floor(_difference/(24 * 3600 * 1000))
+    },
+    funcIntervalQuery(serialNumber) {
+        const nebpay = new NebPay()
+        nebpay.queryPayInfo(serialNumber)
+            .then(function(resp) {
+                console.log('tx result: ' + resp)
+                var respObject = JSON.parse(resp)
+                if (respObject.code === 0) {
+                    clearInterval(this.intervalQuery)
+                }
+            })
+            .catch(function(err) {
+                console.log(err)
+            })
     }
   },
   computed: {

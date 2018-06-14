@@ -84,7 +84,7 @@ export default {
     let currentDate = new Date()
     return {
       modalVisible: false,
-      dappAddress: 'n1ednaSLyDAD4KVfuPkYi3bdPQaqWYW2VBx',   // mainnet
+      dappAddress: 'n1s2FEfEKasfvLtqxx496UkBgf2gpcS3oAt',   // mainnet
       // dappAddress: 'n1pP4zdjUnxqoyjJ2br3gdNEDdqu4nnLjor',  // testnet
       serialNumber: null,
       data: [],

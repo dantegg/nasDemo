@@ -3,20 +3,26 @@
         <el-row :gutter="20" class="head-area">
             <el-col :xs="{span: 22, offset: 1}" :sm="{span: 22, offset: 1}" :md="{span: 12, offset: 6}" :lg="{span: 12, offset: 6}" :xl="{span: 12, offset: 6}">
                 <div class="memory-head">
-                    <div class="calender-area">
-                        <div class="week-day">{{ week[currentDate.getDay()]}}</div>
-                        <div class="date-day">{{ currentDate.getDate() }}</div>
+                    <div class="head-left">
+                        <div class="calender-area">
+                            <div class="week-day">{{ week[currentDate.getDay()]}}</div>
+                            <div class="date-day">{{ currentDate.getDate() }}</div>
+                        </div>
+                        <h1>星云纪念日</h1>
                     </div>
-                    <h1>星云纪念日</h1>
+                    <div class="head-right">
+                        <div class="edit-area">
+                            <el-button type="primary" icon="el-icon-edit" circle @click="modalToggle"></el-button>
+                            <span v-if="noResult">还没有记录，创建一条吧!</span>
+                        </div>
+                    </div>
+                    
                 </div>
             </el-col>
         </el-row>
         <el-row :gutter="20" v-loading="loading">
             <el-col :span="12" :offset="6">
-                <div class="edit-area">
-                    <el-button type="primary" icon="el-icon-edit" circle @click="modalToggle"></el-button>
-                    <span v-if="noResult">还没有记录，创建一条吧!</span>
-                </div>
+                
                 <div class="memory-body">
                     <div v-for="item in data" :key="item.index" class="memoryCard">
                         <el-row :gutter="20">

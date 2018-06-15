@@ -77,7 +77,6 @@
 <script>
 import NebPay from 'nebpay.js'
 import nebulas from 'nebulas'
-import { clearInterval } from 'timers';
 
 export default {
   data() {
@@ -150,6 +149,7 @@ export default {
             qrcode: {
                 showQRCode: false
             },
+            callback: NebPay.config.mainnetUrl,
             listener: function(resp) {
                 console.log("the callback is " + resp)
             }
@@ -157,7 +157,7 @@ export default {
         this.modalToggle()
         this.loading = true
         this.intervalQuery = setInterval(function() {
-            vm.funcIntervalQuery(vm.serialNumber);
+            vm.funcIntervalQuery(vm.serialNumber, 'append');
         }, 10000)
     },
     cancel() {
@@ -165,6 +165,8 @@ export default {
     },
     deleteItem(item) {
         console.log(item)
+        console.log(this.data)
+        console.log(this.data.indexOf(item))
         const vm = this
         this.$confirm('此操作将删除这条记录, 是否继续?', '提示', {
           confirmButtonText: '确定',
@@ -177,6 +179,7 @@ export default {
                 qrcode: {
                     showQRCode: false
                 },
+                callback: NebPay.config.mainnetUrl,
                 listener: function(resp) {
                     console.log("the delete is " + resp)
                 }
@@ -184,16 +187,12 @@ export default {
             console.log(vm.serialNumber, 'serial111')
             vm.intervalQuery = setInterval(function() {
                 console.log(vm.serialNumber, 'serial222')
-                vm.funcIntervalQuery(vm.serialNumber);
+                vm.funcIntervalQuery(vm.serialNumber, 'del');
             }, 10000)
-            this.$message({
-                type: 'success',
-                message: '删除成功!'
-            });
         }).catch(() => {
           this.$message({
             type: 'info',
-            message: '已取消删除'
+            message: '取消删除'
           })
         })
     },
@@ -270,7 +269,7 @@ export default {
         const _difference = _record.getTime() - _current.getTime()
         return Math.floor(_difference/(24 * 3600 * 1000))
     },
-    funcIntervalQuery(serialNumber) {
+    funcIntervalQuery(serialNumber, type) {
         const nebpay = new NebPay()
         const vm = this
         nebpay.queryPayInfo(serialNumber)
@@ -280,6 +279,16 @@ export default {
                 if (respObject.code === 0) {
                     clearInterval(vm.intervalQuery)
                     vm.loading = false
+                    switch(type) {
+                        case 'append':
+                            break
+                        case 'del':
+                            vm.$message({
+                                type: 'success',
+                                message: '删除成功!'
+                            });
+                            break
+                    }
                 }
             })
             .catch(function(err) {

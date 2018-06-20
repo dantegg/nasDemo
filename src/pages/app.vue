@@ -46,7 +46,7 @@
                         </el-row>
                     </div>
                     <div style="text-align: center" v-if="notEnd">
-                        <el-button icon="el-icon-arrow-down" circle @click="query()"></el-button>
+                        <el-button icon="el-icon-arrow-down" circle @click="query(currentPage)"></el-button>
                     </div>
                 </div>
             </el-col>
@@ -99,7 +99,8 @@ export default {
       loading: false,
       currentDate,
       week: ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'],
-      intervalQuery: null
+      intervalQuery: null,
+      currentPage: 1
     };
   },
   mounted() {
@@ -215,24 +216,41 @@ export default {
         }
         const vm = this
         vm.loading = true
-        neb.api.call(from, to, value, nonce, gas_price, gas_limit, contract).then(function(resp) {
-            if (resp.result === 'null') {
-                vm.noResult = true
-            } else {
-                let _callArgs = JSON.stringify([page, 5])
-                let _contract = {
-                    "function": "query",
-                    "args": _callArgs
-                }
-                neb.api.call(from, to, value, nonce, gas_price, gas_limit, _contract).then(function(resp) {
-                    console.log('resp', resp)
-                    vm.data = JSON.parse(resp.result)
-                    vm.loading = false
-                })
+        if (page === 1) {
+            neb.api.call(from, to, value, nonce, gas_price, gas_limit, contract).then(function(resp) {
+                        if (resp.result === 'null') {
+                            vm.noResult = true
+                        } else {
+                            let _callArgs = JSON.stringify([page, 5])
+                            let _contract = {
+                                "function": "query",
+                                "args": _callArgs
+                            }
+                            neb.api.call(from, to, value, nonce, gas_price, gas_limit, _contract).then(function(resp) {
+                                console.log('resp', resp)
+                                vm.data = JSON.parse(resp.result)
+                                vm.loading = false
+                                vm.currentPage += 1
+
+                            })
+                        }
+                    }).catch(function (err) {
+                        console.log("err" + err.message)
+                    })
+        } else {
+            let _callArgs = JSON.stringify([page, 5])
+            let _contract = {
+                 "function": "query",
+                "args": _callArgs
             }
-        }).catch(function (err) {
-            console.log("err" + err.message)
-        })
+            neb.api.call(from, to, value, nonce, gas_price, gas_limit, _contract).then(function(resp) {
+                console.log('page', resp)
+                vm.data = vm.data.concat(JSON.parse(resp.result))
+                vm.loading = false
+                vm.currentPage += 1
+            })
+        }
+        
     },
     queryCount() {
         var neb = new nebulas.Neb()
@@ -289,6 +307,8 @@ export default {
                             });
                             break
                     }
+                    vm.query()
+                    vm.queryCount()
                 }
             })
             .catch(function(err) {

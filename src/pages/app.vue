@@ -285,7 +285,14 @@ export default {
         const _current = new Date()
         const _record = new Date(date)
         const _difference = _record.getTime() - _current.getTime()
-        return Math.floor(_difference/(24 * 3600 * 1000))
+        const _diffHour = Math.floor((_difference % (24 * 3600 * 1000)) / (3600 * 1000))
+        const _diffDay = Math.floor(_difference/(24 * 3600 * 1000))
+        if (_diffDay === 0 && _diffHour !== 0) {
+            return 1
+        } else {
+            return  _diffDay
+        }
+        // return Math.floor(_difference/(24 * 3600 * 1000))
     },
     funcIntervalQuery(serialNumber, type) {
         const nebpay = new NebPay()
@@ -294,11 +301,15 @@ export default {
             .then(function(resp) {
                 console.log('tx result: ' + resp)
                 var respObject = JSON.parse(resp)
-                if (respObject.code === 0) {
+                if (respObject.data.status === 1) {
                     clearInterval(vm.intervalQuery)
                     vm.loading = false
                     switch(type) {
                         case 'append':
+                            vm.$message({
+                                type: 'success',
+                                message: '添加成功!请在钱包确认状态'
+                            });
                             break
                         case 'del':
                             vm.$message({
